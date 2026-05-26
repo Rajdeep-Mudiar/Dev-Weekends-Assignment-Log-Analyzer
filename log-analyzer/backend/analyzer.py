@@ -1,4 +1,38 @@
+import httpx
+import asyncio
 from collections import defaultdict
+
+async def get_ai_insights(stats):
+    prompt = f"""
+    Analyze these server log statistics and provide 3-4 concise, actionable insights.
+    Focus on errors, performance bottlenecks, and unusual patterns.
+    
+    Statistics:
+    - Total Logs: {stats['total']}
+    - Valid: {stats['valid']}
+    - Malformed: {stats['malformed']}
+    - Status Code Distribution: {stats['status_counts']}
+    - Top Endpoints: {stats['endpoint_hits']}
+    - Slowest Endpoints (Avg): {stats['slow_endpoints']}
+    
+    Format the output as a simple list of bullet points. Keep it professional and technical.
+    """
+    
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            # Using llama3.2:1b as it is extremely lightweight and should avoid memory issues
+            response = await client.post("http://localhost:11434/api/generate", json={
+                "model": "llama3.2:1b",
+                "prompt": prompt,
+                "stream": False
+            })
+            
+            if response.status_code == 200:
+                return response.json().get("response", "No insights generated.")
+            else:
+                return f"AI analysis unavailable (Ollama returned {response.status_code})."
+    except Exception as e:
+        return f"AI analysis unavailable: {str(e)}"
 
 def analyze(logs):
     total = len(logs)

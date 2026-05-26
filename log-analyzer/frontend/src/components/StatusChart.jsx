@@ -12,15 +12,39 @@ export default function StatusChart({ statusCounts }) {
     labels,
     datasets: [
       {
+        label: 'Count',
         data: values,
+        backgroundColor: [
+          '#22c55e', // 200
+          '#3b82f6', // 201
+          '#eab308', // 400
+          '#f97316', // 401
+          '#ef4444', // 500
+          '#a855f7', // 404
+        ],
+        borderWidth: 1,
       },
     ],
   };
 
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+      },
+      title: {
+        display: true,
+        text: 'HTTP Status Distribution',
+        font: { size: 16, weight: 'bold' }
+      }
+    }
+  };
+
   return (
-    <div style={{ width: "300px" }}>
-      <h3>Status Codes</h3>
-      <Pie data={data} />
+    <div style={{ height: "300px", width: "100%" }}>
+      <Pie data={data} options={options} />
     </div>
   );
 }
