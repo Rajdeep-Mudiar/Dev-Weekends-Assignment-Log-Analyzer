@@ -1,5 +1,12 @@
 import json
 
+def safe_float(val):
+    try:
+        return float(val.replace("ms", "").replace("s", ""))
+    except:
+        return None
+
+
 def parse_line(line):
     line = line.strip()
 
@@ -15,7 +22,7 @@ def parse_line(line):
 
     parts = line.split()
 
-    if len(parts) < 6:
+    if len(parts) < 5:
         return None, "malformed"
 
     try:
@@ -23,21 +30,16 @@ def parse_line(line):
         ip = parts[1]
         method = parts[2]
         path = parts[3]
-        status = parts[4]
-        response_time = parts[5]
-
-        if status == "-":
-            status = None
-        else:
-            status = int(status)
+        status = parts[4] if parts[4] != "-" else None
+        rt = parts[5] if len(parts) > 5 else None
 
         return {
             "timestamp": timestamp,
             "ip": ip,
             "method": method,
             "path": path,
-            "status": status,
-            "response_time": response_time
+            "status": int(status) if status and status.isdigit() else None,
+            "response_time": safe_float(rt)
         }, "text"
 
     except:
