@@ -124,6 +124,12 @@
 .stat-value.green { color: var(--success); }
 .stat-value.red { color: var(--danger); }
 
+.stat-hint {
+  font-size: 0.75rem;
+  color: var(--danger);
+  font-weight: 500;
+}
+
 .charts-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));

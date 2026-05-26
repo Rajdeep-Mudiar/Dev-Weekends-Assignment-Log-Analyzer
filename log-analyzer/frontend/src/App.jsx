@@ -71,7 +71,8 @@ export default function App() {
             </div>
             <div className="stat-card">
               <h3>Malformed</h3>
-              <p className="stat-value red">{data.malformed}</p>
+              <p className={`stat-value ${data.malformed > 0 ? 'red' : ''}`}>{data.malformed}</p>
+              {data.malformed > 0 && <span className="stat-hint">Anomalies detected</span>}
             </div>
           </section>
 

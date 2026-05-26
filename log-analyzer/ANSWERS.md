@@ -22,10 +22,10 @@ I chose **FastAPI (Python)** and **React (Vite)** with **Groq API** integration:
 **Worse Choice**: A heavy Java Spring Boot or .NET enterprise stack would have been overkill for this "on-call tool" requirement. They add significant boilerplate and memory overhead without providing better parsing logic than Python's native tools.
 
 ## 3. One real edge case
-**Edge Case**: Missing status codes represented as `-` and mixed response time units.
-- **File/Line**: [parser.py:L33-40](file:///d%3A/internship/Dev%20Weekends/log-analyzer/backend/parser.py#L33-40) and [parser.py:L3-7](file:///d%3A/internship/Dev%20Weekends/log-analyzer/backend/parser.py#L3-7).
-- **Explanation**: The code checks if the status field is `-` and converts it to `None` instead of crashing on `int("-")`. It also uses `safe_float` to strip `ms` and `s` suffixes from response times, converting them to a common float format.
-- **Without this**: The parser would crash on the first "incomplete" log entry or mixed-unit line, rendering the tool useless for the "messy" logs described in the prompt.
+**Edge Case**: Handling space-separated timestamps and mixed response time units (`ms`, `s`, unitless).
+- **File/Line**: [parser.py:L37-47](file:///d%3A/internship/Dev%20Weekends/log-analyzer/backend/parser.py#L37-47) and [parser.py:L4-17](file:///d%3A/internship/Dev%20Weekends/log-analyzer/backend/parser.py#L4-17).
+- **Explanation**: The parser uses a regular expression to "anchor" on the IP address. This allows it to correctly identify the timestamp even if it contains spaces (like `2024/03/15 14:23:01`), which would break a simple space-split parser. Additionally, `safe_float` normalizes response times (e.g., `0.1s` becomes `100.0ms`), ensuring all performance statistics are comparable.
+- **Without this**: The parser would either shift indices and misidentify fields (treating the time part of a timestamp as an IP) or crash when encountering a response time unit it didn't expect.
 
 ## 4. AI usage
 - **Tool**: Trae IDE (powered by Gemini-3.5-Flash-Preview).
