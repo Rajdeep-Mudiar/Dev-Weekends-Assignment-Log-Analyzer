@@ -1,8 +1,17 @@
 import httpx
 import asyncio
 from collections import defaultdict
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 async def get_ai_insights(stats):
+    if not GROQ_API_KEY:
+        return "AI analysis unavailable: GROQ_API_KEY not found in environment. Please add it to your .env file."
+
     prompt = f"""
     Analyze these server log statistics and provide 3-4 concise, actionable insights.
     Focus on errors, performance bottlenecks, and unusual patterns.
@@ -20,17 +29,28 @@ async def get_ai_insights(stats):
     
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
-            # Using llama3.2:1b as it is extremely lightweight and should avoid memory issues
-            response = await client.post("http://localhost:11434/api/generate", json={
-                "model": "llama3.2:1b",
-                "prompt": prompt,
-                "stream": False
-            })
+            response = await client.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {GROQ_API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "llama-3.3-70b-versatile",
+                    "messages": [
+                        {"role": "system", "content": "You are a senior site reliability engineer analyzing server logs."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    "temperature": 0.5,
+                    "max_tokens": 500
+                }
+            )
             
             if response.status_code == 200:
-                return response.json().get("response", "No insights generated.")
+                return response.json()["choices"][0]["message"]["content"]
             else:
-                return f"AI analysis unavailable (Ollama returned {response.status_code})."
+                error_detail = response.json().get("error", {}).get("message", "Unknown error")
+                return f"AI analysis unavailable (Groq returned {response.status_code}: {error_detail})."
     except Exception as e:
         return f"AI analysis unavailable: {str(e)}"
 

@@ -86,13 +86,18 @@ export default function App() {
 
           {data.insights && (
             <section className="insights-section">
-              <div className="insight-card">
+              <div className={`insight-card ${data.insights.includes('API_KEY not found') ? 'warning' : ''}`}>
                 <h3>AI Insights & Recommendations</h3>
                 <div className="insight-content">
                   {data.insights.split('\n').map((line, i) => (
                     <p key={i}>{line}</p>
                   ))}
                 </div>
+                {data.insights.includes('API_KEY not found') && (
+                  <div className="setup-instruction">
+                    <p>Add your API key to <code>backend/.env</code></p>
+                  </div>
+                )}
               </div>
             </section>
           )}
